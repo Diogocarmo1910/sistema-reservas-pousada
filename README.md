@@ -2,6 +2,8 @@
 
 Guia para abrir o programa, cadastrar, reservar, cobrar e mostrar o trabalho. Cada passo diz o número que você digita no menu.
 
+A especificação pedida pela disciplina, com requisitos, mockups das telas, diagrama de classes em UML e o quadro Kanban para copiar no Trello, está em [ESPECIFICACAO.md](ESPECIFICACAO.md).
+
 Abra o prompt **dentro da pasta do projeto** (`trabalho_java`). Os arquivos da pousada são gravados na pasta `dados`, ao lado do código.
 
 ## 1. Abrir o programa
