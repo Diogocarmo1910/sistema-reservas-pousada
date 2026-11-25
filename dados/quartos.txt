@@ -1,0 +1,23 @@
+numero: 101
+tipo: SIMPLES
+capacidade: 1
+diaria: 150.00
+status: DISPONIVEL
+
+numero: 102
+tipo: DUPLO
+capacidade: 2
+diaria: 220.00
+status: DISPONIVEL
+
+numero: 201
+tipo: SUITE
+capacidade: 3
+diaria: 350.00
+status: DISPONIVEL
+
+numero: 301
+tipo: CHALE
+capacidade: 4
+diaria: 480.00
+status: DISPONIVEL

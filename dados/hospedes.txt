@@ -1,0 +1,17 @@
+nome: Ana Souza
+cpf: 52998224725
+telefone: 11987654321
+email: ana@email.com
+endereco: Rua das Flores, 10
+
+nome: Bruno Lima
+cpf: 39053344705
+telefone: 21999887766
+email: bruno@email.com
+endereco: Av. Brasil, 200
+
+nome: Carla Mendes
+cpf: 11144477735
+telefone: 31988776655
+email: carla@email.com
+endereco: Rua do Porto, 45
