@@ -6,6 +6,8 @@ A especificação pedida pela disciplina, com requisitos, mockups das telas, dia
 
 Abra o prompt **dentro da pasta do projeto** (`trabalho_java`). Os arquivos da pousada são gravados na pasta `dados`, ao lado do código.
 
+Na faculdade, copie a pasta do projeto ou descompacte o zip. Entre nessa pasta e dê dois cliques em `executar.bat`. O computador do laboratório usa o Java instalado lá. A pasta `dados` nasce nesse computador, com os 3 hóspedes e os 4 quartos de exemplo. O que você cadastrou em casa não vai junto, a menos que você copie a pasta `dados` também.
+
 ## 1. Abrir o programa
 
 1. Dê dois cliques em `compilar.bat` e espere a mensagem `Compilado em bin\`.
@@ -174,13 +176,23 @@ Situação na consulta:
 
 ## 7. Onde ficam os dados
 
-Pasta `dados`, criada ao rodar o programa:
+Pasta `dados`, criada ao rodar o programa. São arquivos de texto: abra no Bloco de Notas.
 
-- `hospedes.dat`
-- `quartos.dat`
-- `reservas.dat`
-- `pagamentos.dat`
-- `sequencia.dat` (próximo código de reserva e de pagamento)
+- `hospedes.txt`
+- `quartos.txt`
+- `reservas.txt`
+- `pagamentos.txt`
+- `sequencia.txt` (próximo código de reserva e de pagamento)
+
+Exemplo do que aparece em `hospedes.txt`:
+
+```text
+nome: Ana Souza
+cpf: 52998224725
+telefone: 11987654321
+email: ana@email.com
+endereco: Rua das Flores, 10
+```
 
 Cada inclusão, alteração, exclusão, pagamento, check-in e check-out grava de novo. Fechar a janela pelo X também pode perder o que ainda não foi gravado: prefira sair pelo `0`.
 

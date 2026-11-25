@@ -1,6 +1,6 @@
 # Especificação do sistema de reservas da pousada
 
-A recepção cadastra hóspedes e quartos, abre reservas, lança pagamento no balcão, faz check-in e check-out. O sistema calcula hospedagem, multa e saldo. Ao fechar e abrir de novo, os cadastros voltam dos arquivos da pasta `dados`.
+A recepção cadastra hóspedes e quartos, abre reservas, lança pagamento no balcão, faz check-in e check-out. O sistema calcula hospedagem, multa e saldo. Ao fechar e abrir de novo, os cadastros voltam dos arquivos de texto da pasta `dados` (`hospedes.txt`, `quartos.txt`, `reservas.txt`, `pagamentos.txt` e `sequencia.txt`). Dá para abrir esses arquivos no Bloco de Notas.
 
 Não há nota fiscal, pagamento online, estorno automático nem mais de um quarto na mesma reserva.
 

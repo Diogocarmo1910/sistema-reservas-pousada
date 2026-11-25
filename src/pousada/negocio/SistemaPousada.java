@@ -334,10 +334,10 @@ public class SistemaPousada {
 
     private void carregar() throws PersistenciaException {
         boolean novo = !arquivos.possuiCadastro();
-        hospedes = arquivos.carregarLista(GerenciadorArquivo.ARQUIVO_HOSPEDES);
-        quartos = arquivos.carregarLista(GerenciadorArquivo.ARQUIVO_QUARTOS);
-        reservas = arquivos.carregarLista(GerenciadorArquivo.ARQUIVO_RESERVAS);
-        pagamentos = arquivos.carregarLista(GerenciadorArquivo.ARQUIVO_PAGAMENTOS);
+        hospedes = arquivos.carregarHospedes();
+        quartos = arquivos.carregarQuartos();
+        reservas = arquivos.carregarReservas();
+        pagamentos = arquivos.carregarPagamentos();
         sequencia = arquivos.possuiSequencia() ? arquivos.carregarSequencia() : reconstruirSequencia();
         if (novo) {
             semearExemplo();
@@ -372,10 +372,10 @@ public class SistemaPousada {
     }
 
     private void salvar() throws PersistenciaException {
-        arquivos.salvarLista(GerenciadorArquivo.ARQUIVO_HOSPEDES, hospedes);
-        arquivos.salvarLista(GerenciadorArquivo.ARQUIVO_QUARTOS, quartos);
-        arquivos.salvarLista(GerenciadorArquivo.ARQUIVO_RESERVAS, reservas);
-        arquivos.salvarLista(GerenciadorArquivo.ARQUIVO_PAGAMENTOS, pagamentos);
+        arquivos.salvarHospedes(hospedes);
+        arquivos.salvarQuartos(quartos);
+        arquivos.salvarReservas(reservas);
+        arquivos.salvarPagamentos(pagamentos);
         arquivos.salvarSequencia(sequencia);
     }
 
