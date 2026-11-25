@@ -3,6 +3,7 @@ package pousada.modelo;
 import java.io.Serializable;
 import java.util.Objects;
 
+/** Nome, CPF e telefone. Hospede herda esta classe. O CPF não muda. */
 public class Pessoa implements Serializable {
 
     private static final long serialVersionUID = 1L;

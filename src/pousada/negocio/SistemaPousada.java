@@ -5,7 +5,6 @@ import pousada.modelo.Hospede;
 import pousada.modelo.Pagamento;
 import pousada.modelo.Quarto;
 import pousada.modelo.Reserva;
-import pousada.modelo.StatusFinanceiro;
 import pousada.modelo.StatusQuarto;
 import pousada.modelo.StatusReserva;
 import pousada.modelo.Textos;
@@ -23,6 +22,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
+/**
+ * Cadastro da pousada: hóspedes, quartos, reservas, pagamentos, multa e saldo.
+ * Cada mudança é gravada na hora.
+ */
 public class SistemaPousada {
 
     private final GerenciadorArquivo arquivos;
@@ -220,8 +223,8 @@ public class SistemaPousada {
         return reserva;
     }
 
-    public ResultadoFinanceiro consultarReserva(int codigo) throws RegraNegocioException {
-        return montarResultado(buscarReserva(codigo));
+    public String consultarReserva(int codigo) throws RegraNegocioException {
+        return textoConta(buscarReserva(codigo));
     }
 
     public void alterarReserva(int codigo, LocalDate entrada, LocalDate saida, int numeroQuarto, int quantidade)
@@ -247,7 +250,7 @@ public class SistemaPousada {
         salvar();
     }
 
-    public ResultadoFinanceiro cancelarReserva(int codigo) throws RegraNegocioException, PersistenciaException {
+    public String cancelarReserva(int codigo) throws RegraNegocioException, PersistenciaException {
         Reserva reserva = buscarReserva(codigo);
         if (reserva.getStatus() != StatusReserva.CONFIRMADA) {
             throw new RegraNegocioException("Cancelamento permitido apenas para reserva confirmada.");
@@ -255,7 +258,7 @@ public class SistemaPousada {
         reserva.setValorMulta(calcularMultaCancelamento(reserva));
         reserva.setStatus(StatusReserva.CANCELADA);
         salvar();
-        return montarResultado(reserva);
+        return textoConta(reserva);
     }
 
     public void realizarCheckIn(int codigo) throws RegraNegocioException, PersistenciaException {
@@ -272,7 +275,7 @@ public class SistemaPousada {
         salvar();
     }
 
-    public ResultadoCheckOut realizarCheckOut(int codigo, LocalDate dataReal)
+    public String realizarCheckOut(int codigo, LocalDate dataReal)
             throws RegraNegocioException, PersistenciaException {
         Reserva reserva = buscarReserva(codigo);
         if (reserva.getStatus() != StatusReserva.CHECKIN) {
@@ -283,18 +286,27 @@ public class SistemaPousada {
         }
         long diasAtraso = Math.max(0, ChronoUnit.DAYS.between(reserva.getDataSaida(), dataReal));
         reserva.setValorMulta(calcularMultaAtraso(reserva, diasAtraso));
-        ResultadoFinanceiro antes = montarResultado(reserva);
-        if (antes.getSaldo().compareTo(BigDecimal.ZERO) > 0) {
+        String atraso = diasAtraso > 0
+                ? "Atraso de " + diasAtraso + " dia(s). Multa: " + Textos.dinheiro(reserva.getValorMulta()) + ". "
+                : "Sem multa de atraso. ";
+        if (saldo(reserva).compareTo(BigDecimal.ZERO) > 0) {
             salvar();
-            return new ResultadoCheckOut(false, diasAtraso, antes);
+            return atraso + "Check-out não concluído. Quite o saldo de "
+                    + Textos.dinheiro(saldo(reserva).max(BigDecimal.ZERO))
+                    + " e repita o check-out." + System.lineSeparator() + textoConta(reserva);
         }
         reserva.setStatus(StatusReserva.CHECKOUT);
         buscarQuarto(reserva.getNumeroQuarto()).setStatus(StatusQuarto.DISPONIVEL);
         salvar();
-        return new ResultadoCheckOut(true, diasAtraso, montarResultado(reserva));
+        String restituir = "";
+        if (saldo(reserva).compareTo(BigDecimal.ZERO) < 0) {
+            restituir = " Valor a restituir: " + Textos.dinheiro(saldo(reserva).negate()) + ".";
+        }
+        return atraso + "Check-out concluído. O quarto voltou a ficar disponível."
+                + restituir + System.lineSeparator() + textoConta(reserva);
     }
 
-    public ResultadoFinanceiro lancarPagamento(int codigoReserva, BigDecimal valor, FormaPagamento forma)
+    public String lancarPagamento(int codigoReserva, BigDecimal valor, FormaPagamento forma)
             throws RegraNegocioException, PersistenciaException {
         if (forma == null) {
             throw new RegraNegocioException("Forma de pagamento obrigatória.");
@@ -302,7 +314,7 @@ public class SistemaPousada {
         Reserva reserva = buscarReserva(codigoReserva);
         validarRecebePagamento(reserva);
         BigDecimal valorValido = Validador.pagamento(valor);
-        BigDecimal aberto = montarResultado(reserva).getSaldoEmAberto();
+        BigDecimal aberto = saldo(reserva).max(BigDecimal.ZERO);
         if (aberto.compareTo(BigDecimal.ZERO) == 0) {
             throw new RegraNegocioException("Não há saldo em aberto para esta reserva.");
         }
@@ -317,7 +329,7 @@ public class SistemaPousada {
                 forma,
                 LocalDate.now()));
         salvar();
-        return montarResultado(reserva);
+        return textoConta(reserva);
     }
 
     private void carregar() throws PersistenciaException {
@@ -412,6 +424,7 @@ public class SistemaPousada {
         return quarto.getValorDiaria().multiply(BigDecimal.valueOf(diarias)).setScale(2, RoundingMode.HALF_UP);
     }
 
+    /** 7 dias ou mais: sem multa. De 3 a 6 dias: 30%. Menos de 3 dias: 50%. */
     private BigDecimal calcularMultaCancelamento(Reserva reserva) {
         long antecedencia = ChronoUnit.DAYS.between(LocalDate.now(), reserva.getDataEntrada());
         if (antecedencia >= 7) {
@@ -423,6 +436,7 @@ public class SistemaPousada {
         return percentual(reserva.getValorHospedagem(), "0.50");
     }
 
+    /** Cada dia depois da saída prevista custa a diária da reserva mais 50%. */
     private BigDecimal calcularMultaAtraso(Reserva reserva, long diasAtraso) {
         if (diasAtraso <= 0) {
             return zero();
@@ -439,48 +453,59 @@ public class SistemaPousada {
         if (reserva.getStatus() == StatusReserva.CONFIRMADA || reserva.getStatus() == StatusReserva.CHECKIN) {
             return;
         }
-        if (reserva.getStatus() == StatusReserva.CANCELADA
-                && montarResultado(reserva).getSaldo().compareTo(BigDecimal.ZERO) > 0) {
+        if (reserva.getStatus() == StatusReserva.CANCELADA && saldo(reserva).compareTo(BigDecimal.ZERO) > 0) {
             return;
         }
         throw new RegraNegocioException("Não é possível lançar pagamento nesta reserva.");
     }
 
-    private ResultadoFinanceiro montarResultado(Reserva reserva) {
+    /** Cancelada deve só a multa. As outras devem a hospedagem mais a multa, menos o que já foi pago. */
+    private BigDecimal saldo(Reserva reserva) {
         BigDecimal devido = reserva.getStatus() == StatusReserva.CANCELADA
                 ? reserva.getValorMulta()
                 : reserva.getValorHospedagem().add(reserva.getValorMulta());
+        return devido.subtract(totalPago(reserva.getCodigo())).setScale(2, RoundingMode.HALF_UP);
+    }
+
+    private String textoConta(Reserva reserva) {
         BigDecimal pago = totalPago(reserva.getCodigo());
-        BigDecimal saldo = devido.subtract(pago).setScale(2, RoundingMode.HALF_UP);
-        StatusFinanceiro situacao;
-        if (saldo.compareTo(BigDecimal.ZERO) <= 0) {
-            situacao = StatusFinanceiro.QUITADO;
+        BigDecimal saldoAtual = saldo(reserva);
+        String situacao = "Parcial";
+        if (saldoAtual.compareTo(BigDecimal.ZERO) <= 0) {
+            situacao = "Quitado";
         } else if (pago.compareTo(BigDecimal.ZERO) == 0) {
-            situacao = StatusFinanceiro.EM_ABERTO;
-        } else {
-            situacao = StatusFinanceiro.PARCIAL;
-        }
-        List<String> descricoes = new ArrayList<>();
-        for (Pagamento pagamento : pagamentos) {
-            if (pagamento.getCodigoReserva() == reserva.getCodigo()) {
-                descricoes.add(pagamento.toString());
-            }
+            situacao = "Em aberto";
         }
         Hospede hospede = localizarHospede(reserva.getCpfHospede());
-        String nome = hospede == null ? "hóspede removido (" + Textos.cpf(reserva.getCpfHospede()) + ")" : hospede.getNome();
-        return new ResultadoFinanceiro(
-                reserva.getCodigo(),
-                reserva.getStatus(),
-                nome,
-                reserva.getNumeroQuarto(),
-                reserva.getDataEntrada(),
-                reserva.getDataSaida(),
-                reserva.getValorHospedagem(),
-                reserva.getValorMulta(),
-                pago,
-                saldo,
-                situacao,
-                descricoes);
+        String nome = hospede == null
+                ? "hóspede removido (" + Textos.cpf(reserva.getCpfHospede()) + ")"
+                : hospede.getNome();
+        StringBuilder texto = new StringBuilder();
+        texto.append("Reserva ").append(reserva.getCodigo()).append(" - ").append(reserva.getStatus()).append('\n');
+        texto.append("Hóspede: ").append(nome).append('\n');
+        texto.append("Quarto: ").append(reserva.getNumeroQuarto()).append('\n');
+        texto.append("Período: ").append(Textos.data(reserva.getDataEntrada()))
+                .append(" a ").append(Textos.data(reserva.getDataSaida())).append('\n');
+        texto.append("Hospedagem: ").append(Textos.dinheiro(reserva.getValorHospedagem())).append('\n');
+        texto.append("Multa: ").append(Textos.dinheiro(reserva.getValorMulta())).append('\n');
+        texto.append("Pago: ").append(Textos.dinheiro(pago)).append('\n');
+        texto.append("Saldo em aberto: ").append(Textos.dinheiro(saldoAtual.max(BigDecimal.ZERO))).append('\n');
+        if (saldoAtual.compareTo(BigDecimal.ZERO) < 0) {
+            texto.append("Valor a restituir: ").append(Textos.dinheiro(saldoAtual.negate())).append('\n');
+        }
+        texto.append("Situação: ").append(situacao).append('\n');
+        texto.append("Pagamentos:");
+        boolean algum = false;
+        for (Pagamento pagamento : pagamentos) {
+            if (pagamento.getCodigoReserva() == reserva.getCodigo()) {
+                texto.append('\n').append("  ").append(pagamento);
+                algum = true;
+            }
+        }
+        if (!algum) {
+            texto.append(" nenhum");
+        }
+        return texto.toString();
     }
 
     private BigDecimal totalPago(int codigoReserva) {

@@ -6,13 +6,12 @@ import pousada.modelo.Quarto;
 import pousada.modelo.Reserva;
 import pousada.modelo.TipoQuarto;
 import pousada.negocio.RegraNegocioException;
-import pousada.negocio.ResultadoCheckOut;
-import pousada.negocio.ResultadoFinanceiro;
 import pousada.negocio.SistemaPousada;
 import pousada.persistencia.PersistenciaException;
 
 import java.util.List;
 
+/** Telas do console. Lê o teclado e chama o SistemaPousada. */
 public class Menu {
 
     private final SistemaPousada sistema;
@@ -349,9 +348,8 @@ public class Menu {
                 System.out.println("Cancelamento não realizado.");
                 return;
             }
-            ResultadoFinanceiro resultado = sistema.cancelarReserva(codigo);
             System.out.println("Reserva cancelada.");
-            System.out.println(resultado);
+            System.out.println(sistema.cancelarReserva(codigo));
         } catch (RegraNegocioException | PersistenciaException e) {
             console.mostrarErro(e);
         }
@@ -368,11 +366,9 @@ public class Menu {
 
     private void realizarCheckOut() {
         try {
-            ResultadoCheckOut resultado = sistema.realizarCheckOut(
+            System.out.println(sistema.realizarCheckOut(
                     console.lerInteiro("Código da reserva: "),
-                    console.lerData("Data real de saída (dd/MM/aaaa): "));
-            System.out.println(resultado.getMensagem());
-            System.out.println(resultado.getFinanceiro());
+                    console.lerData("Data real de saída (dd/MM/aaaa): ")));
         } catch (RegraNegocioException | PersistenciaException e) {
             console.mostrarErro(e);
         }
@@ -396,12 +392,11 @@ public class Menu {
 
     private void lancarPagamento() {
         try {
-            ResultadoFinanceiro resultado = sistema.lancarPagamento(
+            System.out.println("Pagamento lançado.");
+            System.out.println(sistema.lancarPagamento(
                     console.lerInteiro("Código da reserva: "),
                     console.lerDinheiro("Valor: "),
-                    lerFormaPagamento());
-            System.out.println("Pagamento lançado.");
-            System.out.println(resultado);
+                    lerFormaPagamento()));
         } catch (RegraNegocioException | PersistenciaException e) {
             console.mostrarErro(e);
         }

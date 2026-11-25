@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Objects;
 
+/** Quarto que pode ser reservado. O número não muda. */
 public class Quarto implements Serializable {
 
     private static final long serialVersionUID = 1L;

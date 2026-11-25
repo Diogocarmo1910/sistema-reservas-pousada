@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+/** Grava e lê os cadastros na pasta dados. */
 public class GerenciadorArquivo {
 
     public static final String ARQUIVO_HOSPEDES = "hospedes.dat";

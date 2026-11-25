@@ -2,6 +2,7 @@ package pousada.modelo;
 
 import java.util.Objects;
 
+/** Hóspede da pousada. Herda Pessoa e acrescenta e-mail e endereço. */
 public class Hospede extends Pessoa {
 
     private static final long serialVersionUID = 1L;

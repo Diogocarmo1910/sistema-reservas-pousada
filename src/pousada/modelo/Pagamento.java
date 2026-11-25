@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Objects;
 
+/** Valor recebido no balcão, ligado a uma reserva pelo código. */
 public class Pagamento implements Serializable {
 
     private static final long serialVersionUID = 1L;

@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 
+/** Confere nome, CPF, telefone, data e valores antes de gravar. */
 public class Validador {
 
     private Validador() {

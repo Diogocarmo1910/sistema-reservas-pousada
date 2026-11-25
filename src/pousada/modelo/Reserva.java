@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Objects;
 
+/** Liga um hóspede (pelo CPF) a um quarto (pelo número) e guarda o valor fechado. */
 public class Reserva implements Serializable {
 
     private static final long serialVersionUID = 1L;
